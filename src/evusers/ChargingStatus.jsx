@@ -10,7 +10,7 @@ const ChargingStatus = () => {
   const handleEnd = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:8080/capture-payment?paymentId=${paymentId}&amount=${usedAmount}`
+        `https://charge-evya-production.up.railway.app/capture-payment?paymentId=${paymentId}&amount=${usedAmount}`
       );
       alert(res.data || "Payment finalized. Refund (if any) will be processed.");
     } catch (error) {

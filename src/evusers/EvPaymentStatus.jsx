@@ -20,7 +20,7 @@ const EvPaymentStatus = () => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/payment-status?userId=${userId}`);
+        const res = await axios.get(`https://charge-evya-production.up.railway.app/payment-status?userId=${userId}`);
         setStatus(res.data);
       } catch (err) {
         console.error("Error fetching payment status:", err);

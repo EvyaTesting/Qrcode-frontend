@@ -45,7 +45,7 @@ export default function EvPayment() {
     const email = "customer@example.com";
     const mobile = "9999999999";
   
-    const response = await fetch('http://localhost:8080/add_payment', {
+    const response = await fetch('https://charge-evya-production.up.railway.app/add_payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -68,7 +68,7 @@ export default function EvPayment() {
       order_id: order.razorpayOrderid,
       handler: async function (response) {
         try {
-          const callbackRes = await fetch("http://localhost:8080/handle-payment-callback", {
+          const callbackRes = await fetch("https://charge-evya-production.up.railway.app/handle-payment-callback", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({
