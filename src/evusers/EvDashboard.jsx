@@ -24,7 +24,7 @@ export default function EvDashboard() {
       <h2 className="text-lg font-semibold mb-4">Station Details</h2>
 
       <img
-        src="/public/images/logo.svg"
+        src="./logo.svg"
         alt="EV Station"
         className="rounded-xl mb-4 w-full h-40 object-cover"
       />
@@ -74,7 +74,7 @@ export default function EvDashboard() {
         {selectedConnector === null ? (null
         ) : (
           <button className="px-6 py-2 bg-green-600 rounded text-white font-semibold w-full"   onClick={() =>
-    navigate("connecting", { state: { source: "/evdashboard/connecting" } })
+    navigate("/evconnecting", { state: { source: "/evdashboard" } })
   }>Connect</button>
         )}
       </div>

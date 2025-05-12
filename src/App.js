@@ -1,5 +1,4 @@
-import logo from './logo.svg';
-import './index.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import EvDashboard from './evusers/EvDashboard';
 import EvPayment from './evusers/EvPayment';
 import EvPaymentStatus from './evusers/EvPaymentStatus';
@@ -8,13 +7,19 @@ import ChargingStatus from './evusers/ChargingStatus';
 
 function App() {
   return (
-    <div className="App">
-      {/* <EvDashboard/> */}
-     {/* <EvPayment/> */}
-     {/* <EvPaymentStatus/> */}
-{/* <EvConnecting/> */}
-<ChargingStatus/>
-    </div>
+
+      <div className="App">
+        {/* Set up routing */}
+        <Routes>
+          <Route path="/evdashboard" element={<EvDashboard />} />
+          <Route path="/evpayment" element={<EvPayment />} />
+          <Route path="/evpaymentstatus" element={<EvPaymentStatus />} />
+          <Route path="/evconnecting" element={<EvConnecting />} />
+          <Route path="/chargingstatus" element={<ChargingStatus />} />
+          <Route path="/" element={<EvDashboard />} />
+        </Routes>
+      </div>
+    
   );
 }
 

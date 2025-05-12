@@ -39,56 +39,7 @@ export default function EvPayment() {
     }
   };
 
-  // const handlePayment = async () => {
-  //   const name = "EV Customer";
-  //   const email = "customer@example.com";
-  //   const mobile = "9999999999";
   
-  //   const response = await fetch('http://localhost:8080/add_payment', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({
-  //       name,
-  //       email,
-  //       mobile,
-  //       amount: price,  // ✅ Convert to paise
-  //       currency: 'INR'
-  //     }),
-  //   });
-  
-  //   const order = await response.json();
-  
-  //   const options = {
-  //     key: 'rzp_test_DmOXvKkQz6gDsn',
-  //     amount: order.amount,
-  //     currency: 'INR',
-  //     name: 'Motupalli Anitha',
-  //     description: 'EV Charging Payment',
-  //     order_id: order.razorpayOrderid,
-  //     handler: function (response) {
-  //       // ✅ Payment Successful
-  //       navigate('/evdashboard/connecting/evpayments/chargingstatus');
-  //     },
-  //     prefill: {
-  //       name,
-  //       email,
-  //       contact: mobile
-  //     },
-  //     theme: {
-  //       color: '#3399cc'
-  //     }
-  //   };
-  
-  //   const rzp = new window.Razorpay(options);
-    
-  //   // ❌ Payment Failed
-  //   rzp.on('payment.failed', function (response) {
-  //     alert('Payment failed. Please try again.');
-  //     navigate('/evdashboard/connecting/evpayments');
-  //   });
-  
-  //   rzp.open();
-  // };
   const handlePayment = async () => {
     const name = "EV Customer";
     const email = "customer@example.com";
@@ -129,7 +80,7 @@ export default function EvPayment() {
   
           const text = await callbackRes.text();
           if (callbackRes.ok) {
-            navigate("/evdashboard/connecting/evpayments/chargingstatus");
+            navigate("/chargingstatus");
           } else {
             alert("Payment verification failed: " + text);
           }
@@ -151,7 +102,7 @@ export default function EvPayment() {
   
     rzp.on("payment.failed", function (response) {
       alert("Payment failed. Please try again.");
-      navigate("/evdashboard/connecting/evpayments");
+      navigate("/evpayment");
     });
   
     rzp.open();
