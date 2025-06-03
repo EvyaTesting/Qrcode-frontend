@@ -1,14 +1,13 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const fallbackData = {
-  paymentId: "PAY123456",
-  status: "Failed to Fetch – Showing Sample Data",
-  usedAmount: 120,
-  refundAmount: 30,
-  refundStatus: "Refund Initiated"
+  paymentId: "-",
+  status: "-",
+  usedAmount: "-",
+  refundAmount: "0",
+  refundStatus: "-"
 };
 
 const EvPaymentStatus = () => {
@@ -16,11 +15,13 @@ const EvPaymentStatus = () => {
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(false);
   const navigate = useNavigate();
-
+const orderDetails = JSON.parse(sessionStorage.getItem('razorpayOrder'));
+console.log(orderDetails);
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await axios.get(`https://charge-evya-production.up.railway.app/payment-status?userId=${userId}`);
+        const res = await axios.get(`http://chargeevya-env.eba-wzxz3wig.us-east-1.elasticbeanstalk.com/get-payment?orderId=${orderDetails.orderId}`);
+        console.log( "Response",res);
         setStatus(res.data);
       } catch (err) {
         console.error("Error fetching payment status:", err);
@@ -31,69 +32,59 @@ const EvPaymentStatus = () => {
     fetchStatus();
   }, [userId]);
 
-  if (!status)
+  if (!status) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <p className="text-lg font-medium text-gray-600">Loading payment status...</p>
       </div>
     );
-
+  }
+  
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="relative bg-white shadow-2xl rounded-2xl p-6 w-full max-w-lg border border-gray-200">
+    <div className="max-w-md mx-auto min-h-screen bg-white p-6">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-green-700">Charging Summary</h1>
+      </div>
 
-        {/* Top-right close icon */}
-        <button
-          onClick={() => navigate("/evdashboard")}
-          className="absolute top-3 right-4 text-gray-400 hover:text-red-600 text-2xl font-bold"
-          title="Close"
-        >
-          ×
-        </button>
+      {/* {error && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 rounded mb-4 text-sm">
+          ⚠️ Real-time data unavailable. Showing sample data.
+        </div>
+      )} */}
 
-        <h2 className="text-2xl font-extrabold text-center text-indigo-700 mb-6">EV Payment Status</h2>
-
-        {error && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 rounded mb-4 text-sm text-center">
-            ⚠️ Real-time data unavailable. Showing sample data.
-          </div>
-        )}
-
-        <div className="space-y-4 text-gray-700 text-base">
+      <div className="bg-gray-100 rounded-xl p-6 mb-6">
+        <div className="space-y-4">
           <div className="flex justify-between">
-            <span className="font-semibold">Payment ID:</span>
-            <span>{status.paymentId}</span>
+            <span className="font-medium text-gray-600">Payment ID:</span>
+            <span className="font-semibold">{status.razorpayPaymentId}</span>
           </div>
           <div className="flex justify-between">
-            <span className="font-semibold">Status:</span>
-            <span className="text-green-600 font-medium">{status.status}</span>
+            <span className="font-medium text-gray-600">Status:</span>
+            <span className="font-semibold text-green-600">{status.status}</span>
           </div>
           <div className="flex justify-between">
-            <span className="font-semibold">Used Amount:</span>
-            <span>₹{status.usedAmount}</span>
+            <span className="font-medium text-gray-600">Used Amount:</span>
+            <span className="font-semibold">₹{(status.amount / 100).toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="font-semibold">Refund Amount:</span>
-            <span>₹{status.refundAmount}</span>
+            <span className="font-medium text-gray-600">Refund Amount:</span>
+            <span className="font-semibold">₹{status.refundAmount||0}</span>
           </div>
           {status.refundStatus && (
             <div className="flex justify-between">
-              <span className="font-semibold">Refund Status:</span>
-              <span className="text-blue-600">{status.refundStatus}</span>
+              <span className="font-medium text-gray-600">Refund Status:</span>
+              <span className="font-semibold text-blue-600">{status.refundStatus}</span>
             </div>
           )}
         </div>
-
-        {/* Bottom Close Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => navigate("/evdashboard")}
-            className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md"
-          >
-            Close
-          </button>
-        </div>
       </div>
+
+      <button
+        onClick={() => navigate("/evdashboard")}
+        className="w-full py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700"
+      >
+        Back to Dashboard
+      </button>
     </div>
   );
 };

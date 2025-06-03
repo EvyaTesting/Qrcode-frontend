@@ -39,75 +39,100 @@ export default function EvPayment() {
     }
   };
 
-  
   const handlePayment = async () => {
     const name = "EV Customer";
     const email = "customer@example.com";
     const mobile = "9999999999";
   
-    const response = await fetch('https://charge-evya-production.up.railway.app/add_payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        mobile,
-        amount: price , // ₹ to paise
-        currency: 'INR'
-      }),
-    });
+    try {
+      const response = await fetch('http://chargeevya-env.eba-wzxz3wig.us-east-1.elasticbeanstalk.com/add_payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          mobile,
+          amount: price * 100, // Convert to paise
+          currency: 'INR'
+        }),
+      });
   
-    const order = await response.json();
+      const order = await response.json();
+      
+      // Store order details in sessionStorage
+      sessionStorage.setItem('razorpayOrder', JSON.stringify({
+        orderId: order.razorpayOrderid,
+        amount: price,
+        createdAt: new Date().toISOString()
+      }));
   
-    const options = {
-      key: 'rzp_test_z51wLt0JB2gGzV',
-      amount: order.amount,
-      currency: 'INR',
-      name: 'Avyaya e-we power solutions pvt',
-      description: 'EV Charging Payment',
-      order_id: order.razorpayOrderid,
-      handler: async function (response) {
-        try {
-          const callbackRes = await fetch("https://charge-evya-production.up.railway.app/handle-payment-callback", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
+      const options = {
+        key: 'rzp_test_z51wLt0JB2gGzV',
+        amount: order.amount,
+        currency: 'INR',
+        name: 'Avyaya e-we power solutions pvt',
+        description: 'EV Charging Payment',
+        order_id: order.razorpayOrderid,
+        handler: async function (response) {
+          try {
+            // Store payment success details
+            sessionStorage.setItem('paymentSuccess', JSON.stringify({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+              status: 'success'
+            }));
+            
+            const callbackRes = await fetch("http://chargeevya-env.eba-wzxz3wig.us-east-1.elasticbeanstalk.com/handle-payment-callback", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
   
-          const text = await callbackRes.text();
-          if (callbackRes.ok) {
-            navigate("/chargingstatus");
-          } else {
-            alert("Payment verification failed: " + text);
+            if (callbackRes.ok) {
+              navigate("/chargingstatus");
+            } else {
+              const error = await callbackRes.text();
+              alert(`Payment verification failed: ${error}`);
+            }
+          } catch (err) {
+            console.error("Payment callback error:", err);
+            alert("Error verifying payment. Please contact support.");
           }
-        } catch (err) {
-          alert("Error verifying payment. Please contact support.");
-        }
-      },
-      prefill: {
-        name,
-        email,
-        contact: mobile,
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
+        },
+        prefill: {
+          name,
+          email,
+          contact: mobile,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
   
-    const rzp = new window.Razorpay(options);
+      const rzp = new window.Razorpay(options);
   
-    rzp.on("payment.failed", function (response) {
-      alert("Payment failed. Please try again.");
-      navigate("/evpayment");
-    });
+      rzp.on("payment.failed", function (response) {
+        // Store failed payment details
+        sessionStorage.setItem('paymentFailed', JSON.stringify({
+          error: response.error,
+          orderId: response.error.metadata.order_id,
+          status: 'failed'
+        }));
+        alert(`Payment failed: ${response.error.description}`);
+        navigate("/evpayment");
+      });
   
-    rzp.open();
+      rzp.open();
+    } catch (error) {
+      console.error("Payment initialization error:", error);
+      alert("Failed to initialize payment. Please try again.");
+    }
   };
-  
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 rounded-xl shadow-md font-sans">
