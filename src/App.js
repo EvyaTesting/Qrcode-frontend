@@ -1,22 +1,26 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import EvDashboard from './evusers/EvDashboard';
-import EvPayment from './evusers/EvPayment';
-import EvPaymentStatus from './evusers/EvPaymentStatus';
-import EvConnecting from './evusers/EvConnecting';
+import { LanguageProvider } from './components/Context';
+import Dashboard from './evusers/EvDashboard';
+import Connecting from './evusers/EvConnecting';
+import Payment from './evusers/EvPayment';
+import PaymentStatus from './evusers/EvPaymentStatus';
 import ChargingStatus from './evusers/ChargingStatus';
 
 function App() {
   return (
-    <div className="App">
-      <Routes>
-        <Route path="/evdashboard" element={<EvDashboard />} />
-        <Route path="/evpayment" element={<EvPayment />} />
-        <Route path="/evpaymentstatus" element={<EvPaymentStatus />} />
-        <Route path="/evconnecting" element={<EvConnecting />} />
-        <Route path="/chargingstatus" element={<ChargingStatus />} />
-        <Route path="/" element={<EvDashboard />} />
-      </Routes>
-    </div>
+    <LanguageProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/evdashboard" element={<Dashboard />} />
+          <Route path="/evconnecting" element={<Connecting />} />
+          <Route path="/evpayment" element={<Payment />} />
+          <Route path="/chargingstatus" element={<ChargingStatus />} />
+          <Route path="/evpaymentstatus" element={<PaymentStatus />} />
+        </Routes>
+      </Router>
+    </LanguageProvider>
   );
 }
 
