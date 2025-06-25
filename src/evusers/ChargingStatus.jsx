@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCar, FaBolt, FaClock, FaMoneyBillWave } from 'react-icons/fa';
+import { FaCar, FaBolt, FaClock, FaMoneyBillWave, FaArrowLeft } from 'react-icons/fa';
 import useTranslation from '../components/useTranslation';
 import LanguageSelector from '../components/Language';
-
+import { useLanguage } from '../components/Context';
 
 const ChargingStatus = () => {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const [isCharging, setIsCharging] = useState(true);
   const navigate = useNavigate();
 
@@ -17,9 +18,15 @@ const ChargingStatus = () => {
     }, 3000);
   };
 
-  return (
+  const EnglishChargingStatus = () => (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 rounded-xl shadow-md font-sans">
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-between items-center mb-4">
+        <button 
+          onClick={() => navigate(-1)}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          <FaArrowLeft className="text-xl" />
+        </button>
         <LanguageSelector />
       </div>
 
@@ -89,6 +96,87 @@ const ChargingStatus = () => {
       )}
     </div>
   );
+
+  const ArabicChargingStatus = () => (
+    <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 rounded-xl shadow-md font-sans" dir="rtl">
+      <div className="flex justify-between items-center mb-4">
+        <LanguageSelector />
+        <button 
+          onClick={() => navigate(-1)}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          <FaArrowLeft className="text-xl" />
+        </button>
+      </div>
+
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-green-700">{t('chargingStatus')}</h1>
+      </div>
+
+      <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+            {t('fastCharging', { multiplier: 43 })}
+          </div>
+          <div>
+            <div className="text-4xl font-bold text-green-600">25</div>
+            <div className="text-gray-600">{t('kilowatt')}</div>
+          </div>
+        </div>
+
+        <div className="h-px bg-gray-200 my-4"></div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-right">
+            <h2 className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-1 justify-end">
+              {t('chargingTime')} <FaClock className="text-green-600" />
+            </h2>
+            <div className="text-lg font-semibold text-right">00:12:16</div>
+          </div>
+          <div className="text-right">
+            <h2 className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-1 justify-end">
+              {t('cost')} <FaMoneyBillWave className="text-green-600" />
+            </h2>
+            <div className="text-lg font-semibold ">₹812.00</div>
+          </div>
+          <div className="text-right">
+            <h2 className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-1 justify-end">
+              {t('units')} <FaBolt className="text-green-600" />
+            </h2>
+            <div className="text-lg font-semibold">12 kW</div>
+          </div>
+          <div className="text-right">
+            <h2 className="text-sm font-medium text-gray-500 mb-1">{t('speed')}</h2>
+            <div className="text-lg font-semibold">5.5 kW/h</div>
+          </div>
+        </div>
+
+        <div className="h-px bg-gray-200 my-4"></div>
+
+        <div className="text-center">
+          <h2 className="text-lg font-medium flex items-center justify-center gap-2">
+            Tata Curvy EV <FaCar className="text-green-600" />
+          </h2>
+          <div className="text-sm text-gray-600">TS08EV9876</div>
+        </div>
+      </div>
+
+      <button 
+        className="w-full py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition duration-200"
+        onClick={handleStopCharging}
+      >
+        {isCharging ? t('stopCharging') : t('processing')}
+      </button>
+
+      {!isCharging && (
+        <div className="mt-4 text-center text-gray-600">
+          {t('preparingSummary')}
+        </div>
+      )}
+    </div>
+  );
+
+  return language === "arab" ? <ArabicChargingStatus /> : <EnglishChargingStatus />;
 };
 
 export default ChargingStatus;
