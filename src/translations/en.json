@@ -1,5 +1,7 @@
 
 {
+  "stationName":"ChargeEvya EV Charging Station",
+  "address": "Tech Park Road, Gachibowli, Hyderabad - 500032, India",
   "stationDetails": "Station Details",
   "selectConnector": "Select a Connector",
   "information": "Information",
