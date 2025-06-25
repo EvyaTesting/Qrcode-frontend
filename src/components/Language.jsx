@@ -13,6 +13,7 @@ const LanguageSelector = () => {
       <option value="en">English</option>
       <option value="hi">हिंदी (Hindi)</option>
       <option value="te">తెలుగు (Telugu)</option>
+      <option value="arab">العربية (Arabic)</option>
     </select>
   );
 };
