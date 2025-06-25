@@ -217,7 +217,7 @@ export default function EvDashboard() {
   const navigate = useNavigate();
   const { t, currentLanguage } = useTranslation();
 
-  const isRTL = currentLanguage === 'ar'; // Check if current language is Arabic
+  const isRTL = currentLanguage === 'ar';
 
   const proceedToPayment = () => {
     setShowConnectorDetails(false);
@@ -233,12 +233,20 @@ export default function EvDashboard() {
     }
   };
 
+  // RTL utility classes
+  const rtlClass = isRTL ? 'rtl' : '';
+  const textAlignClass = isRTL ? 'text-right' : 'text-left';
+  const flexDirectionClass = isRTL ? 'flex-row-reverse' : 'flex-row';
+  const marginDirection = (base) => isRTL ? `ml-${base}` : `mr-${base}`;
+  const borderDirectionClass = isRTL ? 'border-r-4' : 'border-l-4';
+
   return (
     <div 
-      className={`max-w-md mx-auto bg-white min-h-screen p-4 font-sans ${isRTL ? 'text-right' : 'text-left'}`}
+      className={`max-w-md mx-auto bg-white min-h-screen p-4 font-sans ${textAlignClass} ${rtlClass}`}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between items-center mb-4`}>
+      {/* Header */}
+      <div className={`flex ${flexDirectionClass} justify-between items-center mb-4`}>
         <h2 className="text-lg font-semibold">{t('stationDetails')}</h2>
         <LanguageSelector />
       </div>
@@ -254,7 +262,8 @@ export default function EvDashboard() {
         <p className="text-sm text-gray-600">{t('address')}</p>
       </div>
 
-      <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} space-x-4 mt-4 border-b`}>
+      {/* Tabs */}
+      <div className={`flex ${flexDirectionClass} space-x-4 mt-4 border-b`}>
         <button
           className={`pb-2 ${selectedTab === 'Connectors' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
           onClick={() => setSelectedTab('Connectors')}
@@ -276,14 +285,14 @@ export default function EvDashboard() {
             {connectors.map((conn) => (
               <div
                 key={conn.id}
-                className={`rounded-lg p-3 ${conn.status === 'available' ? 'bg-green-100 border-l-4 border-green-400' : conn.status === 'inUse' ? 'bg-yellow-100 border-l-4 border-yellow-400' : 'bg-gray-200 border-l-4 border-gray-400'} ${selectedConnector === conn.id ? 'ring-2 ring-green-500' : ''}`}
+                className={`rounded-lg p-3 ${conn.status === 'available' ? `bg-green-100 ${borderDirectionClass} border-green-400` : conn.status === 'inUse' ? `bg-yellow-100 ${borderDirectionClass} border-yellow-400` : `bg-gray-200 ${borderDirectionClass} border-gray-400`} ${selectedConnector === conn.id ? 'ring-2 ring-green-500' : ''}`}
                 onClick={() => {
                   if (conn.status === 'available') {
                     setSelectedConnector(conn.id);
                     setShowConnectorDetails(true);
                   }
                 }}>
-                <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between items-center`}>
+                <div className={`flex ${flexDirectionClass} justify-between items-center`}>
                   <span className="font-medium">{conn.slot}</span>
                   <span className={`text-xs ${conn.status === 'available' ? 'text-green-600' : conn.status === 'inUse' ? 'text-yellow-600' : 'text-gray-500'}`}>
                     {getStatusText(conn.status)}
@@ -311,8 +320,8 @@ export default function EvDashboard() {
 
           <h4 className="font-semibold mb-1">{t('contactDetails')}</h4>
           <div className="text-sm text-gray-600">
-            <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} items-start mb-2`}>
-              <MapPin className={`w-4 h-4 mt-1 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+            <div className={`flex ${flexDirectionClass} items-start mb-2`}>
+              <MapPin className={`w-4 h-4 mt-1 ${marginDirection(2)}`} />
               {t('address')}
             </div>
             <img
@@ -320,47 +329,48 @@ export default function EvDashboard() {
               alt="Map"
               className="rounded-xl mb-2 w-full h-32 object-cover"
             />
-            <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} items-center mb-1 text-green-600`}>
-              <Phone className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} /> {t('phone')}
+            <div className={`flex ${flexDirectionClass} items-center mb-1 text-green-600`}>
+              <Phone className={`w-4 h-4 ${marginDirection(2)}`} /> {t('phone')}
             </div>
-            <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} items-center text-green-600`}>
-              <Mail className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} /> {t('email')}
+            <div className={`flex ${flexDirectionClass} items-center text-green-600`}>
+              <Mail className={`w-4 h-4 ${marginDirection(2)}`} /> {t('email')}
             </div>
           </div>
         </div>
       )}
 
+      {/* Connector Details Modal */}
       {showConnectorDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className={`bg-white rounded-lg p-6 w-full max-w-md ${isRTL ? 'text-right' : 'text-left'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+          <div className={`bg-white rounded-lg p-6 w-full max-w-md ${textAlignClass}`} dir={isRTL ? 'rtl' : 'ltr'}>
             <h3 className="text-lg font-bold mb-4">{t('connectorDetails')}</h3>
             <div className="space-y-3">
               {connectors.filter(c => c.id === selectedConnector).map(conn => (
                 <React.Fragment key={conn.id}>
-                  <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
+                  <div className={`flex ${flexDirectionClass} justify-between`}>
                     <span className="font-medium">{t('slot')}:</span>
                     <span>{conn.slot}</span>
                   </div>
-                  <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
+                  <div className={`flex ${flexDirectionClass} justify-between`}>
                     <span className="font-medium">{t('type')}:</span>
                     <span>{conn.type}</span>
                   </div>
-                  <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
+                  <div className={`flex ${flexDirectionClass} justify-between`}>
                     <span className="font-medium">{t('price')}:</span>
                     <span>{conn.price}</span>
                   </div>
-                  <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
+                  <div className={`flex ${flexDirectionClass} justify-between`}>
                     <span className="font-medium">{t('level')}:</span>
                     <span>{conn.level}</span>
                   </div>
-                  <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
+                  <div className={`flex ${flexDirectionClass} justify-between`}>
                     <span className="font-medium">{t('power')}:</span>
                     <span>{conn.power}</span>
                   </div>
                 </React.Fragment>
               ))}
             </div>
-            <div className={`mt-6 flex ${isRTL ? 'flex-row-reverse' : ''} justify-end space-x-3`}>
+            <div className={`mt-6 flex ${flexDirectionClass} justify-end space-x-3`}>
               <button 
                 className="px-4 py-2 border rounded"
                 onClick={() => setShowConnectorDetails(false)}
