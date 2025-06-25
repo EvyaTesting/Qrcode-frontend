@@ -1,11 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaQuestionCircle, FaTimes } from 'react-icons/fa';
 import useTranslation from '../components/useTranslation';
 import LanguageSelector from '../components/Language';
+import { useLanguage } from '../components/Context';
 
 const EvConnecting = () => {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const [steps, setSteps] = useState([
@@ -42,7 +44,7 @@ const EvConnecting = () => {
     };
   }, [navigate]);
 
-  return (
+  const EnglishConnecting = () => (
     <div className="max-w-md mx-auto min-h-screen bg-white p-6 rounded-xl shadow-md font-sans flex flex-col justify-between">
       <div className="flex justify-end mb-4">
         <LanguageSelector />
@@ -74,10 +76,10 @@ const EvConnecting = () => {
 
       <div className="mt-8 space-y-3">
         <button
-          className="w-full py-3 bg-blue-100 text-blue-800 font-medium rounded-lg"
+          className="w-full py-3 bg-blue-100 text-blue-800 font-medium rounded-lg flex items-center justify-center gap-2"
           onClick={() => setShowHelp(!showHelp)}
         >
-          {t('needHelp')}
+          <FaQuestionCircle /> {t('needHelp')}
         </button>
         <button
           className="w-full py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600"
@@ -89,12 +91,21 @@ const EvConnecting = () => {
 
       {showHelp && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">{t('help')}</h3>
+              <button 
+                onClick={() => setShowHelp(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FaTimes />
+              </button>
+            </div>
             <p className="text-gray-700 mb-4">
               {t('helpText')}
             </p>
             <button
-              className="w-full py-2 bg-blue-600 text-white rounded-md"
+              className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               onClick={() => setShowHelp(false)}
             >
               {t('close')}
@@ -104,165 +115,80 @@ const EvConnecting = () => {
       )}
     </div>
   );
+
+  const ArabicConnecting = () => (
+    <div className="max-w-md mx-auto min-h-screen bg-white p-6 rounded-xl shadow-md font-sans flex flex-col justify-between" dir="rtl">
+      <div className="flex justify-start mb-4">
+        <LanguageSelector />
+      </div>
+
+      <div className="flex flex-col items-center">
+        <img src="/vehicle.jpg" alt="EV" className="w-2/3 mb-6" />
+        <h1 className="text-2xl font-semibold text-gray-800 text-center mb-4">
+          {t('connectMessage')}
+        </h1>
+
+        <div className="space-y-6 w-full">
+          {steps.map((step, index) => (
+            <div key={index} className="flex items-center gap-4">
+              <span className={`text-sm ${step.completed ? 'text-green-600' : step.active ? 'text-blue-600 font-medium' : 'text-gray-600'}`}>
+                {t(step.key)}
+              </span>
+              {step.completed ? (
+                <div className="w-6 h-6 rounded-full bg-green-500 text-white text-sm flex items-center justify-center">✓</div>
+              ) : step.active ? (
+                <div className="w-6 h-6 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+              ) : (
+                <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-3">
+        <button
+          className="w-full py-3 bg-blue-100 text-blue-800 font-medium rounded-lg flex items-center justify-center gap-2"
+          onClick={() => setShowHelp(!showHelp)}
+        >
+          {t('needHelp')} <FaQuestionCircle />
+        </button>
+        <button
+          className="w-full py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600"
+          onClick={() => navigate('/evdashboard')}
+        >
+          {t('cancelCharging')}
+        </button>
+      </div>
+
+      {showHelp && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full" dir="rtl">
+            <div className="flex justify-between items-center mb-4">
+              <button 
+                onClick={() => setShowHelp(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FaTimes />
+              </button>
+              <h3 className="text-lg font-semibold">{t('help')}</h3>
+            </div>
+            <p className="text-gray-700 mb-4 text-right">
+              {t('helpText')}
+            </p>
+            <button
+              className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              onClick={() => setShowHelp(false)}
+            >
+              {t('close')}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return language === "arab" ? <ArabicConnecting /> : <EnglishConnecting />;
 };
-
-
-
-const styles = {
-  container: {
-    fontFamily: "'Segoe UI', sans-serif",
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    minHeight: '100vh',
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    boxSizing: 'border-box',
-    position: 'relative',
-  },
-  progressBar: {
-    height: '4px',
-    backgroundColor: '#4CAF50',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    transition: 'width 0.3s ease-in-out',
-    zIndex: 10,
-  },
-  statusContainer: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: '400px',
-  },
-  chargingVisualization: {
-    width: '100%',
-    height: '140px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '25px',
-  },
-  vehicleImage: {
-    width: '80%',
-    height: 'auto',
-    objectFit: 'contain',
-  },
-  title: {
-    fontSize: '24px',
-    color: '#2E3A59',
-    fontWeight: 600,
-    marginBottom: '25px',
-    textAlign: 'center',
-  },
-  stepsContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    width: '100%',
-    padding: '0 10px',
-  },
-  step: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-  },
-  circleContainer: {
-    width: '30px',
-    height: '30px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyCircle: {
-    width: '22px',
-    height: '22px',
-    borderRadius: '50%',
-    border: '2px solid #ccc',
-  },
-  loader: {
-    width: '22px',
-    height: '22px',
-    borderRadius: '50%',
-    border: '2px solid #ddd',
-    borderTop: '2px solid #1E88E5',
-    animation: 'spin 1s linear infinite',
-  },
-  checkmark: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 'bold',
-  },
-  stepText: {
-    fontSize: '16px',
-  },
-  buttonContainer: {
-    width: '100%',
-    maxWidth: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    marginTop: '20px',
-  },
-  helpButton: {
-    padding: '14px',
-    backgroundColor: '#E3F2FD',
-    color: '#0D47A1',
-    border: 'none',
-    borderRadius: '8px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  },
-  cancelButton: {
-    padding: '14px',
-    backgroundColor: '#EF5350',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  },
-  helpModal: {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: '#fff',
-    padding: '24px',
-    borderRadius: '10px',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-    width: '90%',
-    maxWidth: '350px',
-    zIndex: 1000,
-  },
-  helpText: {
-    fontSize: '15px',
-    marginBottom: '15px',
-    color: '#333',
-  },
-  closeHelpButton: {
-    padding: '10px',
-    backgroundColor: '#1976D2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-  },
-};
-
-// Add this to your global CSS
-// @keyframes spin {
-//   0% { transform: rotate(0deg); }
-//   100% { transform: rotate(360deg); }
-// }
 
 export default EvConnecting;
