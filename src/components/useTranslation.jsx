@@ -4,11 +4,12 @@ import { useLanguage } from './Context';
 import en from '../translations/en.json';
 import hi from '../translations/hi.json';
 import te from '../translations/te.json';
-
+import arab from '../translations/arab.json';
 const translations = {
   en,
   hi,
   te,
+  arab,
 };
 
 const useTranslation = () => {
