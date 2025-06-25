@@ -193,6 +193,7 @@ import { MapPin, Phone, Mail, Toilet, Sofa, Wifi, ShoppingBag, Coffee, Wrench } 
 import { useNavigate } from 'react-router-dom';
 import useTranslation from '../components/useTranslation';
 import LanguageSelector from '../components/Language';
+import { useLanguage } from '../components/Context';
 
 const connectors = [
   { id: 1, status: 'available', slot: 'Slot A', type: 'CCS2', price: '₹20/kW', level: 'Level 1 (AC)', power: '60 kW' },
@@ -210,13 +211,327 @@ const amenities = [
   { name: 'mechanic', icon: <Wrench size={20} /> }
 ];
 
+const EnglishDashboard = ({ 
+  selectedTab, setSelectedTab, 
+  selectedConnector, setSelectedConnector, 
+  showConnectorDetails, setShowConnectorDetails,
+  t, proceedToPayment, getStatusText 
+}) => (
+  <>
+    {/* Header with language selector */}
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-lg font-semibold">{t('stationDetails')}</h2>
+      <LanguageSelector />
+    </div>
+
+    {/* Station Image */}
+    <img
+      src="/evstation.jpg"
+      alt="EV Station"
+      className="rounded-xl mb-4 w-full h-40 object-cover"
+    />
+    
+    {/* Station Info */}
+    <div>
+      <h3 className="text-md font-bold">{t('stationName')}</h3>
+      <p className="text-sm text-gray-600">{t('address')}</p>
+    </div>
+
+    {/* Tabs */}
+    <div className="flex space-x-4 mt-4 border-b">
+      <button
+        className={`pb-2 ${selectedTab === 'Connectors' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
+        onClick={() => setSelectedTab('Connectors')}
+      >
+        {t('selectConnector')}
+      </button>
+      <button
+        className={`pb-2 ${selectedTab === 'Information' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
+        onClick={() => setSelectedTab('Information')}
+      >
+        {t('information')}
+      </button>
+    </div>
+
+    {/* Connectors Tab */}
+    {selectedTab === 'Connectors' ? (
+      <div className="mt-4">
+        <h4 className="font-semibold mb-2">{t('selectConnector')}</h4>
+        <div className="grid grid-cols-2 gap-2">
+          {connectors.map((conn) => (
+            <div
+              key={conn.id}
+              className={`rounded-lg p-3 ${conn.status === 'available' ? 'bg-green-100 border-l-4 border-green-400' : conn.status === 'inUse' ? 'bg-yellow-100 border-l-4 border-yellow-400' : 'bg-gray-200 border-l-4 border-gray-400'} ${selectedConnector === conn.id ? 'ring-2 ring-green-500' : ''}`}
+              onClick={() => {
+                if (conn.status === 'available') {
+                  setSelectedConnector(conn.id);
+                  setShowConnectorDetails(true);
+                }
+              }}
+            >
+              <div className="flex justify-between items-center">
+                <span className="font-medium">{conn.slot}</span>
+                <span className={`text-xs ${conn.status === 'available' ? 'text-green-600' : conn.status === 'inUse' ? 'text-yellow-600' : 'text-gray-500'}`}>
+                  {getStatusText(conn.status)}
+                </span>
+              </div>
+              <div className="text-xs text-gray-700 mt-1">{conn.type}</div>
+              <div className="text-xs">{conn.price}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : (
+      // Amenities and contact details
+      <div className="mt-4">
+        <h4 className="font-semibold mb-2">{t('amenities')}</h4>
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          {amenities.map((amenity, index) => (
+            <div key={index} className="flex flex-col items-center text-sm text-gray-600">
+              <div className="w-10 h-10 bg-gray-200 rounded-full mb-1 flex items-center justify-center">
+                {amenity.icon}
+              </div>
+              {t(amenity.name)}
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold mb-1">{t('contactDetails')}</h4>
+        <div className="text-sm text-gray-600">
+          <div className="flex items-start mb-2">
+            <MapPin className="w-4 h-4 mt-1 mr-2" />
+            {t('address')}
+          </div>
+          <img
+            src="/map.png"
+            alt="Map"
+            className="rounded-xl mb-2 w-full h-32 object-cover"
+          />
+          <div className="flex items-center mb-1 text-green-600">
+            <Phone className="w-4 h-4 mr-2" /> {t('phone')}
+          </div>
+          <div className="flex items-center text-green-600">
+            <Mail className="w-4 h-4 mr-2" /> {t('email')}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Connector Details Modal */}
+    {showConnectorDetails && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <h3 className="text-lg font-bold mb-4">{t('connectorDetails')}</h3>
+          <div className="space-y-3">
+            {connectors.filter(c => c.id === selectedConnector).map(conn => (
+              <React.Fragment key={conn.id}>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('slot')}:</span>
+                  <span>{conn.slot}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('type')}:</span>
+                  <span>{conn.type}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('price')}:</span>
+                  <span>{conn.price}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('level')}:</span>
+                  <span>{conn.level}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">{t('power')}:</span>
+                  <span>{conn.power}</span>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-end space-x-3">
+            <button 
+              className="px-4 py-2 border rounded"
+              onClick={() => setShowConnectorDetails(false)}
+            >
+              {t('cancel')}
+            </button>
+            <button 
+              className="px-4 py-2 bg-green-600 text-white rounded"
+              onClick={proceedToPayment}
+            >
+              {t('connect')}
+            </button>
+          </div>
+        </div>
+      </div> 
+    )}
+  </>
+);
+
+const ArabicDashboard = ({ 
+  selectedTab, setSelectedTab, 
+  selectedConnector, setSelectedConnector, 
+  showConnectorDetails, setShowConnectorDetails,
+  t, proceedToPayment, getStatusText 
+}) => (
+  <>
+    {/* Header with language selector */}
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-lg font-semibold">{t('stationDetails')}</h2>
+      <LanguageSelector />
+    </div>
+
+    {/* Station Image */}
+    <img
+      src="/evstation.jpg"
+      alt="EV Station"
+      className="rounded-xl mb-4 w-full h-40 object-cover"
+    />
+    
+    {/* Station Info */}
+    <div className="text-right">
+      <h3 className="text-md font-bold">{t('stationName')}</h3>
+      <p className="text-sm text-gray-600">{t('address')}</p>
+    </div>
+
+    {/* Tabs */}
+    <div className="flex space-x-4 mt-4 border-b">
+      <button
+        className={`pb-2 ${selectedTab === 'Connectors' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
+        onClick={() => setSelectedTab('Connectors')}
+      >
+        {t('selectConnector')}
+      </button>
+      <button
+        className={`pb-2 ${selectedTab === 'Information' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
+        onClick={() => setSelectedTab('Information')}
+      >
+        {t('information')}
+      </button>
+    </div>
+
+    {/* Connectors Tab */}
+    {selectedTab === 'Connectors' ? (
+      <div className="mt-4 text-right">
+        <h4 className="font-semibold mb-2">{t('selectConnector')}</h4>
+        <div className="grid grid-cols-2 gap-2">
+          {connectors.map((conn) => (
+            <div
+              key={conn.id}
+              className={`rounded-lg p-3 ${conn.status === 'available' ? 'bg-green-100 border-l-4 border-green-400' : conn.status === 'inUse' ? 'bg-yellow-100 border-l-4 border-yellow-400' : 'bg-gray-200 border-l-4 border-gray-400'} ${selectedConnector === conn.id ? 'ring-2 ring-green-500' : ''}`}
+              onClick={() => {
+                if (conn.status === 'available') {
+                  setSelectedConnector(conn.id);
+                  setShowConnectorDetails(true);
+                }
+              }}
+            >
+              <div className="flex justify-between items-center">
+                <span className="font-medium">{conn.slot}</span>
+                <span className={`text-xs ${conn.status === 'available' ? 'text-green-600' : conn.status === 'inUse' ? 'text-yellow-600' : 'text-gray-500'}`}>
+                  {getStatusText(conn.status)}
+                </span>
+              </div>
+              <div className="text-xs text-gray-700 mt-1">{conn.type}</div>
+              <div className="text-xs">{conn.price}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : (
+      // Amenities and contact details
+      <div className="mt-4 text-right">
+        <h4 className="font-semibold mb-2">{t('amenities')}</h4>
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          {amenities.map((amenity, index) => (
+            <div key={index} className="flex flex-col items-center text-sm text-gray-600">
+              <div className="w-10 h-10 bg-gray-200 rounded-full mb-1 flex items-center justify-center">
+                {amenity.icon}
+              </div>
+              {t(amenity.name)}
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold mb-1">{t('contactDetails')}</h4>
+        <div className="text-sm text-gray-600">
+          <div className="flex items-start mb-2 flex-row-reverse">
+            <MapPin className="w-4 h-4 mt-1 ml-2" />
+            {t('address')}
+          </div>
+          <img
+            src="/map.png"
+            alt="Map"
+            className="rounded-xl mb-2 w-full h-32 object-cover"
+          />
+          <div className="flex items-center mb-1 text-green-600 flex-row-reverse">
+            <Phone className="w-4 h-4 ml-2" /> {t('phone')}
+          </div>
+          <div className="flex items-center text-green-600 flex-row-reverse">
+            <Mail className="w-4 h-4 ml-2" /> {t('email')}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Connector Details Modal */}
+    {showConnectorDetails && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md text-right">
+          <h3 className="text-lg font-bold mb-4">{t('connectorDetails')}</h3>
+          <div className="space-y-3">
+            {connectors.filter(c => c.id === selectedConnector).map(conn => (
+              <React.Fragment key={conn.id}>
+                <div className="flex justify-between flex-row-reverse">
+                  <span className="font-medium">{t('slot')}:</span>
+                  <span>{conn.slot}</span>
+                </div>
+                <div className="flex justify-between flex-row-reverse">
+                  <span className="font-medium">{t('type')}:</span>
+                  <span>{conn.type}</span>
+                </div>
+                <div className="flex justify-between flex-row-reverse">
+                  <span className="font-medium">{t('price')}:</span>
+                  <span>{conn.price}</span>
+                </div>
+                <div className="flex justify-between flex-row-reverse">
+                  <span className="font-medium">{t('level')}:</span>
+                  <span>{conn.level}</span>
+                </div>
+                <div className="flex justify-between flex-row-reverse">
+                  <span className="font-medium">{t('power')}:</span>
+                  <span>{conn.power}</span>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-start space-x-3">
+            <button 
+              className="px-4 py-2 bg-green-600 text-white rounded"
+              onClick={proceedToPayment}
+            >
+              {t('connect')}
+            </button>
+            <button 
+              className="px-4 py-2 border rounded"
+              onClick={() => setShowConnectorDetails(false)}
+            >
+              {t('cancel')}
+            </button>
+          </div>
+        </div>
+      </div> 
+    )}
+  </>
+);
+
 export default function EvDashboard() {
   const [selectedTab, setSelectedTab] = useState('Connectors');
   const [selectedConnector, setSelectedConnector] = useState(null);
   const [showConnectorDetails, setShowConnectorDetails] = useState(false);
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
-  const isRTL = language === 'ar';
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   const proceedToPayment = () => {
     setShowConnectorDetails(false);
@@ -224,7 +539,7 @@ export default function EvDashboard() {
   };
 
   const getStatusText = (status) => {
-    switch (status) {
+    switch(status) {
       case 'available': return t('available');
       case 'inUse': return t('inUse');
       case 'inactive': return t('inactive');
@@ -232,160 +547,24 @@ export default function EvDashboard() {
     }
   };
 
+  const commonProps = {
+    selectedTab,
+    setSelectedTab,
+    selectedConnector,
+    setSelectedConnector,
+    showConnectorDetails,
+    setShowConnectorDetails,
+    t,
+    proceedToPayment,
+    getStatusText
+  };
+
   return (
-    <div
-      dir={isRTL ? 'rtl' : 'ltr'}
-      className={`max-w-md mx-auto bg-white min-h-screen p-4 ${
-        isRTL ? 'text-right font-arabic' : 'text-left font-sans'
-      }`}
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">{t('stationDetails')}</h2>
-        <LanguageSelector />
-      </div>
-
-      <img
-        src="/evstation.jpg"
-        alt="EV Station"
-        className="rounded-xl mb-4 w-full h-40 object-cover"
-      />
-
-      <div>
-        <h3 className="text-md font-bold">{t('stationName')}</h3>
-        <p className="text-sm text-gray-600">{t('address')}</p>
-      </div>
-
-      <div className="flex space-x-4 mt-4 border-b justify-start">
-        <button
-          className={`pb-2 ${selectedTab === 'Connectors' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
-          onClick={() => setSelectedTab('Connectors')}
-        >
-          {t('selectConnector')}
-        </button>
-        <button
-          className={`pb-2 ${selectedTab === 'Information' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-500'}`}
-          onClick={() => setSelectedTab('Information')}
-        >
-          {t('information')}
-        </button>
-      </div>
-
-      {selectedTab === 'Connectors' ? (
-        <div className="mt-4">
-          <h4 className="font-semibold mb-2">{t('selectConnector')}</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {connectors.map((conn) => (
-              <div
-                key={conn.id}
-                className={`rounded-lg p-3 cursor-pointer ${
-                  conn.status === 'available' ? 'bg-green-100 border-l-4 border-green-400' :
-                  conn.status === 'inUse' ? 'bg-yellow-100 border-l-4 border-yellow-400' :
-                  'bg-gray-200 border-l-4 border-gray-400'
-                } ${selectedConnector === conn.id ? 'ring-2 ring-green-500' : ''}`}
-                onClick={() => {
-                  if (conn.status === 'available') {
-                    setSelectedConnector(conn.id);
-                    setShowConnectorDetails(true);
-                  }
-                }}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">{conn.slot}</span>
-                  <span className={`text-xs ${
-                    conn.status === 'available' ? 'text-green-600' :
-                    conn.status === 'inUse' ? 'text-yellow-600' :
-                    'text-gray-500'
-                  }`}>
-                    {getStatusText(conn.status)}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-700 mt-1">{conn.type}</div>
-                <div className="text-xs">{conn.price}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="max-w-md mx-auto bg-white min-h-screen p-4 font-sans">
+      {language === "arab" ? (
+        <ArabicDashboard {...commonProps} />
       ) : (
-        <div className="mt-4">
-          <h4 className="font-semibold mb-2">{t('amenities')}</h4>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {amenities.map((amenity, index) => (
-              <div key={index} className="flex flex-col items-center text-sm text-gray-600">
-                <div className="w-10 h-10 bg-gray-200 rounded-full mb-1 flex items-center justify-center">
-                  {amenity.icon}
-                </div>
-                {t(amenity.name)}
-              </div>
-            ))}
-          </div>
-
-          <h4 className="font-semibold mb-1">{t('contactDetails')}</h4>
-          <div className="text-sm text-gray-600">
-            <div className={`flex items-start mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <MapPin className="w-4 h-4 mt-1 mx-2" />
-              {t('address')}
-            </div>
-            <img
-              src="/map.png"
-              alt="Map"
-              className="rounded-xl mb-2 w-full h-32 object-cover"
-            />
-            <div className={`flex items-center mb-1 text-green-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Phone className="w-4 h-4 mx-2" /> {t('phone')}
-            </div>
-            <div className={`flex items-center text-green-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Mail className="w-4 h-4 mx-2" /> {t('email')}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showConnectorDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold mb-4">{t('connectorDetails')}</h3>
-            <div className="space-y-3">
-              {connectors.filter(c => c.id === selectedConnector).map(conn => (
-                <React.Fragment key={conn.id}>
-                  <div className="flex justify-between">
-                    <span className="font-medium">{t('slot')}:</span>
-                    <span>{conn.slot}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">{t('type')}:</span>
-                    <span>{conn.type}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">{t('price')}:</span>
-                    <span>{conn.price}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">{t('level')}:</span>
-                    <span>{conn.level}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">{t('power')}:</span>
-                    <span>{conn.power}</span>
-                  </div>
-                </React.Fragment>
-              ))}
-            </div>
-            <div className={`mt-6 flex justify-end space-x-3 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
-              <button
-                className="px-4 py-2 border rounded"
-                onClick={() => setShowConnectorDetails(false)}
-              >
-                {t('cancel')}
-              </button>
-              <button
-                className="px-4 py-2 bg-green-600 text-white rounded"
-                onClick={proceedToPayment}
-              >
-                {t('connect')}
-              </button>
-            </div>
-          </div>
-        </div>
+        <EnglishDashboard {...commonProps} />
       )}
     </div>
   );
