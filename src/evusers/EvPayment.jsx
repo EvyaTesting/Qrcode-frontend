@@ -3,9 +3,105 @@ import { useNavigate } from 'react-router-dom';
 import { FaRupeeSign, FaBolt, FaPercentage } from 'react-icons/fa';
 import useTranslation from '../components/useTranslation';
 import LanguageSelector from '../components/Language';
+import { useLanguage } from '../components/Context';
+
+const PaymentForm = ({ 
+  price, inputValue, selectedType, isProcessing, errorMessage,
+  handleInputChange, handleTypeChange, handlePayment, getPlaceholder, t,
+  isRTL = false
+}) => (
+  <div className={`max-w-md mx-auto min-h-screen bg-gray-50 p-6 rounded-xl shadow-md font-sans ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex ${isRTL ? 'justify-start' : 'justify-end'} mb-2`}>
+      <LanguageSelector />
+    </div>
+
+    <h2 className="text-2xl font-bold text-center mb-6 text-green-700">💸 {t('evChargingCheckIn')}</h2>
+
+    <div className="grid grid-cols-3 gap-3 mb-6">
+      {[
+        { key: 'price', label: t('byPrice'), icon: <FaRupeeSign /> },
+        { key: 'units', label: t('byUnits'), icon: <FaBolt /> },
+        { key: 'percentage', label: t('byPercentage'), icon: <FaPercentage /> },
+      ].map(({ key, label, icon }) => (
+        <button
+          key={key}
+          onClick={() => handleTypeChange(key)}
+          className={`flex flex-col items-center py-3 px-2 border rounded-lg transition ${
+            selectedType === key
+              ? 'bg-green-600 text-white border-green-600'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-green-500'
+          }`}
+        >
+          <div className="text-lg">{icon}</div>
+          <span className="text-sm font-medium mt-1">{label}</span>
+        </button>
+      ))}
+    </div>
+
+    <div className="relative mb-4">
+      <input
+        type="number"
+        value={inputValue}
+        onChange={handleInputChange}
+        className={`w-full border border-gray-300 ${isRTL ? 'pr-4' : 'pl-4'} ${isRTL ? 'text-right' : 'text-left'} py-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm`}
+        placeholder={getPlaceholder()}
+      />
+      <p className="text-center text-2xl font-bold mt-3 text-green-700">
+        {isRTL ? '¥' : '₹'}{price.toFixed(2)}
+      </p>
+    </div>
+
+    <div className={`bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-md mb-6 text-sm shadow-sm ${isRTL ? 'text-right' : 'text-left'}`}>
+      <p>{t('connectGunProperly')}</p>
+      <p>{t('minimumAmount')}</p>
+    </div>
+
+    <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm mb-6">
+      <div className="flex justify-between text-gray-700 font-medium text-sm">
+        <span>{t('totalChargingCost')}</span>
+        <span className="text-lg font-bold text-black">
+          {isRTL ? '¥' : '₹'}{price.toFixed(2)}
+        </span>
+      </div>
+      <div className={`text-xs text-green-600 underline mt-2 ${isRTL ? 'text-left' : 'text-right'} cursor-pointer`}>
+        {t('viewCostBreakup')}
+      </div>
+    </div>
+
+    {errorMessage && (
+      <div className={`mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm ${isRTL ? 'text-right' : 'text-left'}`}>
+        {errorMessage}
+      </div>
+    )}
+
+    <div className={`flex ${isRTL ? 'justify-end' : 'justify-between'} items-center`}>
+      {!isRTL && <div></div>}
+      <button
+        onClick={handlePayment}
+        disabled={price < 50 || isProcessing}
+        className={`bg-green-600 text-white px-6 py-2 rounded-full font-semibold transition duration-200 ${
+          isProcessing ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-700'
+        } ${price < 50 ? 'bg-gray-300 cursor-not-allowed' : ''}`}
+      >
+        {isProcessing ? (
+          <span className="flex items-center justify-center">
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {t('processing')}
+          </span>
+        ) : (
+          t('payCharge')
+        )}
+      </button>
+    </div>
+  </div>
+);
 
 export default function EvPayment() {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const [price, setPrice] = useState(35);
   const [inputValue, setInputValue] = useState('');
   const [selectedType, setSelectedType] = useState('price');
@@ -64,6 +160,7 @@ export default function EvPayment() {
     const mobile = "9999999999";
 
     try {
+      // First API call to create payment order
       const response = await fetch('https://qr-ajvz.onrender.com/add_payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,6 +185,7 @@ export default function EvPayment() {
         createdAt: new Date().toISOString()
       }));
 
+      // Initialize Razorpay payment
       const options = {
         key: 'rzp_test_z51wLt0JB2gGzV',
         amount: order.amount,
@@ -104,6 +202,7 @@ export default function EvPayment() {
               status: 'success'
             }));
             
+            // Second API call to verify payment
             const callbackRes = await fetch("https://qr-ajvz.onrender.com/handle-payment-callback", {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -157,90 +256,24 @@ export default function EvPayment() {
     }
   };
 
+  const commonProps = {
+    price,
+    inputValue,
+    selectedType,
+    isProcessing,
+    errorMessage,
+    handleInputChange,
+    handleTypeChange,
+    handlePayment,
+    getPlaceholder,
+    t
+  };
+
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 p-6 rounded-xl shadow-md font-sans">
-      <div className="flex justify-end mb-2">
-        <LanguageSelector />
-      </div>
-
-      <h2 className="text-2xl font-bold text-center mb-6 text-green-700">💸 {t('evChargingCheckIn')}</h2>
-
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {[
-          { key: 'price', label: t('byPrice'), icon: <FaRupeeSign /> },
-          { key: 'units', label: t('byUnits'), icon: <FaBolt /> },
-          { key: 'percentage', label: t('byPercentage'), icon: <FaPercentage /> },
-        ].map(({ key, label, icon }) => (
-          <button
-            key={key}
-            onClick={() => handleTypeChange(key)}
-            className={`flex flex-col items-center py-3 px-2 border rounded-lg transition ${
-              selectedType === key
-                ? 'bg-green-600 text-white border-green-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-green-500'
-            }`}
-          >
-            <div className="text-lg">{icon}</div>
-            <span className="text-sm font-medium mt-1">{label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="relative mb-4">
-        <input
-          type="number"
-          value={inputValue}
-          onChange={handleInputChange}
-          className="w-full border border-gray-300 pl-4 pr-4 py-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm"
-          placeholder={getPlaceholder()}
-        />
-        <p className="text-center text-2xl font-bold mt-3 text-green-700">₹{price.toFixed(2)}</p>
-      </div>
-
-      <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 p-4 rounded-md mb-6 text-sm shadow-sm">
-        <p>{t('connectGunProperly')}</p>
-        <p>{t('minimumAmount')}</p>
-      </div>
-
-      <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm mb-6">
-        <div className="flex justify-between text-gray-700 font-medium text-sm">
-          <span>{t('totalChargingCost')}</span>
-          <span className="text-lg font-bold text-black">₹{price.toFixed(2)}</span>
-        </div>
-        <div className="text-xs text-green-600 underline mt-2 text-right cursor-pointer">
-          {t('viewCostBreakup')}
-        </div>
-      </div>
-
-      {errorMessage && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="flex justify-between items-center">
-        <div></div>
-        <button
-          onClick={handlePayment}
-          disabled={price < 50 || isProcessing}
-          className={`bg-green-600 text-white px-6 py-2 rounded-full font-semibold transition duration-200 ${
-            isProcessing ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-700'
-          } ${price < 50 ? 'bg-gray-300 cursor-not-allowed' : ''}`}
-        >
-          {isProcessing ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {t('processing')}
-            </span>
-          ) : (
-            t('payCharge')
-          )}
-        </button>
-      </div>
-    </div>
+    <PaymentForm 
+      {...commonProps}
+      isRTL={language === "arab"}
+    />
   );
 }
 
