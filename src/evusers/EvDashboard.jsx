@@ -185,7 +185,6 @@
 //     </div>
 //   );
 // }
-
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Toilet, Sofa, Wifi, ShoppingBag, Coffee, Wrench } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
